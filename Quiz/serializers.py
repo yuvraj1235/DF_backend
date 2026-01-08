@@ -14,8 +14,18 @@ class CreateUserSerializer(serializers.ModelSerializer):
         fields = ('email', 'username', 'first_name')
 
     def create(self, data):
-        user = User.objects.create_user(username=data['username'],
-                                        email=data['email'],first_name=data['first_name'])
+        # Check if user already exists
+        existing_user = User.objects.filter(email=data['email']).first()
+        
+        if existing_user:
+            return existing_user
+        
+        # Create only if doesn't exist
+        user = User.objects.create_user(
+            username=data['username'],
+            email=data['email'],
+            first_name=data['first_name']
+        )
         return user
 
 
