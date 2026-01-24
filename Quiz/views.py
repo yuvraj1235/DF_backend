@@ -301,7 +301,7 @@ class getuserscore(APIView):
                    print('ok')
                    continue
                if p.first_name == player.first_name:     
-                   return Response({"status":200,"score":player.score,"rank":current_rank,"name":player.first_name,"email":player.email})
+                   return Response({"status":200,"score":player.score,"rank":current_rank,"name":player.first_name,"email":player.email,"imageLink":player.imageLink,"roundNo":player.roundNo })
                else:
                    current_rank += 1        
         except (Player.DoesNotExist):

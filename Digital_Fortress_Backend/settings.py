@@ -203,3 +203,10 @@ CORS_ALLOWED_ORIGINS = [
 
 # Allow credentials (cookies/auth headers) to be sent
 CORS_ALLOW_CREDENTIALS = True
+# Add this for development so Django can find static files
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'Quiz/static'), # or wherever your app static files are
+]
+
+# Ensure this is set to True for local development to serve static files
+DEBUG = config('DEBUG', default=True, cast=bool)
