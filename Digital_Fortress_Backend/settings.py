@@ -21,9 +21,11 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 ALLOWED_HOSTS = [
     "13.60.47.208",
     "ec2-13-60-47-208.eu-north-1.compute.amazonaws.com",
+    "digital-fortress-taupe.vercel.app",   # ✅ ADD THIS
     "localhost",
     "127.0.0.1",
 ]
+
 
 GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
 
