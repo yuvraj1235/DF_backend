@@ -19,8 +19,8 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
 ALLOWED_HOSTS = [
-    "13.53.205.86",          # EC2 IP (DEV ONLY)
-    "api.yourdomain.com",    # 🔴 CHANGE THIS to your real backend domain
+    "13.60.47.208",
+    "ec2-13-60-47-208.eu-north-1.compute.amazonaws.com",
     "localhost",
     "127.0.0.1",
 ]
