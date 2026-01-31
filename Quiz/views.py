@@ -24,16 +24,22 @@ from decimal import Decimal
 from decouple import config
 # Create your views here.
 
-def check_duration(username):
+def check_duration(user):
     tm = timezone.now()
     obj = duration.objects.all().first()
-    player = Player.objects.get(name=username)
+    # ✅ Use email instead of name
+    try:
+        player = Player.objects.get(email=user.email)
+    except Player.DoesNotExist:
+        return True  # Block access if player doesn't exist
+    
     if player.isStaff:
         return False
     if tm > obj.start_time and tm < obj.end_time:
         return False
     else:
         return True    
+
 def isHidden():
     tm = timezone.now()
     obj = duration.objects.all().first()
@@ -253,9 +259,9 @@ class Login(generics.GenericAPIView):
 @permission_classes([IsAuthenticated, ])
 class getRound(APIView):
     def get(self, request, format=None):
-        if check_duration(request.user.username):
+        if check_duration(request.user):  # ✅ Pass user object
             return Response({"start_time":duration.objects.all().first().start_time ,"end_time":duration.objects.all().first().end_time , "status": 410, "detail": 1})
-        player = Player.objects.get(name=request.user.username)
+        player = Player.objects.get(email=request.user.email)  # ✅ Use email
         try:
             curr_round = Round.objects.get(round_number=player.roundNo)
             serializer = RoundSerializer(curr_round)
@@ -277,11 +283,11 @@ class checkRound(APIView):
         if not dur:
             return Response({"message": "Quiz settings not configured"}, status=500)
 
-        if check_duration(request.user.username):
+        if check_duration(request.user):  # ✅ Pass user object
              return Response({"status": 410, "start": dur.start_time, "end": dur.end_time})
 
         try:
-            player = Player.objects.get(name=request.user.username)
+            player = Player.objects.get(email=request.user.email)  # ✅ Use email
             # Use get_object_or_404 logic or try/except
             round_obj = Round.objects.get(round_number=player.roundNo)
             
@@ -289,13 +295,14 @@ class checkRound(APIView):
         except Exception as e:
             print(f"Error: {e}") # This prints to your terminal
             return Response({"status": 500, "message": str(e)})
+
 @permission_classes([IsAuthenticated])
 class getuserscore(APIView):
     def get(self,request):
         ps= Player.objects.order_by("-score", "submit_time")
         current_rank = 1
         try:
-           player= Player.objects.get(name=request.user.username)
+           player= Player.objects.get(email=request.user.email)  # ✅ Use email
            for p in ps:
                if player.isStaff == True:
                    print('ok')
@@ -306,13 +313,14 @@ class getuserscore(APIView):
                    current_rank += 1        
         except (Player.DoesNotExist):
             return Response({"status":404, "message":"user not found"})
+
 @permission_classes([IsAuthenticated])
 class getClue(APIView):
     def get(self, request, format=None):
-        if check_duration(request.user.username):
+        if check_duration(request.user):  # ✅ Pass user object
             return Response({"start_time":duration.objects.all().first().start_time ,"end_time":duration.objects.all().first().end_time , "status": 410, "detail": 1})
         try:
-            player = Player.objects.get(name=request.user.username)
+            player = Player.objects.get(email=request.user.email)  # ✅ Use email
             round = Round.objects.get(round_number=(player.roundNo))
             response = []
             clues = Clue.objects.filter(round=round)
@@ -336,10 +344,10 @@ class getClue(APIView):
 @permission_classes([IsAuthenticated])
 class putClue(APIView):
     def post(self, request, *args, **kwargs):
-        if check_duration(request.user.username):
+        if check_duration(request.user):  # ✅ Pass user object
             return Response({"start_time":duration.objects.all().first().start_time ,"end_time":duration.objects.all().first().end_time , "status": 410, "detail": 1})
         try:
-            player = Player.objects.get(name=request.user.username)
+            player = Player.objects.get(email=request.user.email)  # ✅ Use email
             try:
                 clue = Clue.objects.get(pk=int(request.data.get("clue_id")))
                 if clue.checkAnswer(request.data.get("answer")):
