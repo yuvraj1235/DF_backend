@@ -278,24 +278,46 @@ class getRound(APIView):
 @permission_classes([IsAuthenticated])
 class checkRound(APIView):
     def post(self, request, *args, **kwargs):
-        # 1. Check if duration exists
         dur = duration.objects.all().first()
         if not dur:
             return Response({"message": "Quiz settings not configured"}, status=500)
 
-        if check_duration(request.user):  # ✅ Pass user object
+        if check_duration(request.user):
              return Response({"status": 410, "start": dur.start_time, "end": dur.end_time})
 
         try:
-            player = Player.objects.get(email=request.user.email)  # ✅ Use email
-            # Use get_object_or_404 logic or try/except
+            player = Player.objects.get(email=request.user.email)
             round_obj = Round.objects.get(round_number=player.roundNo)
             
-            # ... rest of your logic
-        except Exception as e:
-            print(f"Error: {e}") # This prints to your terminal
-            return Response({"status": 500, "message": str(e)})
+            user_answer = request.data.get("answer", "").strip().lower()
+            correct_answer = round_obj.answer.strip().lower()
 
+            if user_answer == correct_answer:
+                # Update player progress
+                player.roundNo += 1
+                player.score += 10 # or whatever your scoring logic is
+                player.submit_time = timezone.now()
+                player.save()
+                
+                # ✅ MUST RETURN A RESPONSE HERE
+                return Response({
+                    "status": 200, 
+                    "message": "Correct Answer!",
+                    "nextRound": player.roundNo
+                })
+            else:
+                # ✅ MUST RETURN A RESPONSE HERE
+                return Response({
+                    "status": 400, 
+                    "message": "Wrong Answer!"
+                })
+
+        except Exception as e:
+            print(f"Error: {e}")
+            return Response({"status": 500, "message": str(e)})
+        
+        return Response({"status": 400, "message": "Invalid Request"})
+    
 @permission_classes([IsAuthenticated])
 class getuserscore(APIView):
     def get(self,request):
